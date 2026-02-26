@@ -132,4 +132,32 @@ First component: [description or screenshot]
 
 ---
 
+---
+
+## WORKFLOW: HTML FIRST → JSON SECOND
+
+The recommended build workflow for any component:
+
+**Step 1 — HTML/CSS artifact**
+Request standalone preview output. Debug visually in the artifact until the layout matches the design. This is fast to iterate — no import/export cycle.
+
+**Step 2 — Convert to Bricks JSON**
+Once the HTML/CSS is visually confirmed, request JSON output. The structure and CSS are already correct — conversion is mechanical.
+
+**Step 3 — First import**
+Paste JSON into Bricks canvas. This creates all elements and global classes with Bricks-generated IDs.
+
+**Step 4 — Copy live JSON back**
+After first import, copy the component back out of Bricks (select all elements → copy). Paste that JSON back to Claude. This syncs the real Bricks-generated IDs into the conversation — all subsequent JSON output will use those IDs, preventing conflicts on re-import.
+
+**Step 5 — Iterations**
+- CSS-only changes → edit directly in Bricks Global Classes panel. No re-import needed.
+- Structure changes (new elements, reordering) → request updated JSON using the live IDs from Step 4, then re-import.
+- On re-import: Bricks matches on global class IDs. If IDs already exist, the CSS may not update — always verify in Global Classes panel after import.
+
+**Why live IDs matter:**
+Bricks assigns its own 6-char IDs on import. If you re-import JSON with different IDs, Bricks creates duplicate global classes rather than updating existing ones. Always work from live IDs after first import.
+
+---
+
 *Last updated: Session Feb 2026*

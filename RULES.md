@@ -81,8 +81,49 @@ Every element carries its Bricks element class **first**, followed by BEM class(
 | `text-basic` | `<p>` / inline | `brxe-text-basic` | `{text, tag: "p"}` |
 | `text` | `<div>` (rich) | `brxe-text` | `{text: "<p>HTML</p>"}` — full HTML string |
 | `text-link` | `<a>` | `brxe-text-link` | `{text}` |
+| `counter` | `<div>` | `brxe-counter` | `{countFrom, countTo, duration, thousands, separator}` |
 
 - `text-basic` = single `<p>` or simple text, no inner HTML formatting
+- `counter` = animated number counter. Renders as `<div class="brxe-counter"><span class="count">[value]</span></div>`. Use for stat values, metrics, figures.
+
+#### Counter element — full settings reference
+
+```json
+{
+  "id": "xxxxxx",
+  "name": "counter",
+  "parent": "xxxxxx",
+  "children": [],
+  "settings": {
+    "_cssGlobalClasses": ["xxxxxx"],
+    "countFrom": 0,
+    "countTo": 1000,
+    "duration": 1000,
+    "thousands": ",",
+    "separator": ""
+  }
+}
+```
+
+| Setting | Type | Notes |
+|---|---|---|
+| `countFrom` | integer | Starting value — usually `0` |
+| `countTo` | integer or string | End value — the number displayed |
+| `duration` | integer | Animation duration in ms — `1000` = 1 second |
+| `thousands` | string | Thousands separator — `","` for 1,000 or `""` for none |
+| `separator` | string | Decimal separator — usually `""` |
+
+**Prefix/suffix** (e.g. `$10M+`, `50k`) — the counter only animates the number. Wrap it in a `div` or `block` alongside `text-basic` elements for prefix/suffix text, or use a `text-basic` for the label below.
+
+Example stat structure with counter:
+```
+brxe-div  bt-feature__stat
+  brxe-div  bt-feature__stat-value-wrap    ← flex row
+    brxe-text-basic  bt-feature__stat-prefix   ← "$"
+    brxe-counter     bt-feature__stat-counter  ← animates 0 → 10
+    brxe-text-basic  bt-feature__stat-suffix   ← "M+"
+  brxe-text-basic  bt-feature__stat-label      ← "Lorem ipsum"
+```
 - `text` = WYSIWYG / rich content with mixed tags, lists, formatted HTML
 - Always set `tag` explicitly on `heading` and `text-basic` — never rely on defaults
 
@@ -493,6 +534,56 @@ Each modifier is its own global class object. Both are applied via `_cssGlobalCl
 | `bt-fade-in` | Animation trigger — JS hook. No CSS. Apply to any element. |
 | `bt-section-kicker` | Overline label above a section. Flex row with rule line. |
 | `grid--borders` | Shared borders on flush grid layouts — no doubling. Apply to the grid container. |
+| `bt-stats` | Reusable animated stat display — counter + prefix/suffix + label. Use anywhere stats appear. |
+
+---
+
+### `bt-stats` — reusable stat display component
+
+Use whenever an animated number stat appears — hero, feature section, pricing, anywhere. Not scoped to any parent block.
+
+**Structure:**
+```
+bt-stats                    ← block (one stat unit)
+  bt-stats__value           ← flex row (prefix + counter + suffix)
+    bt-stats__prefix        ← optional prefix e.g. "$"
+    bt-stats__counter       ← brxe-counter element
+    bt-stats__suffix        ← optional suffix e.g. "M+", "k"
+  bt-stats__label           ← descriptor below the number
+```
+
+**CSS (lives in bt-stats global class):**
+```css
+%root%__value {
+  display: flex;
+  align-items: baseline;
+  gap: 0.1em;
+}
+
+%root%__prefix,
+%root%__suffix,
+%root%__counter .count {
+  font-size: var(--h5); /* FLAG: adjust per design */
+  font-weight: 700;
+  line-height: 1;
+}
+
+%root%__label {
+  font-size: var(--text-s);
+  color: var(--text-dark-muted);
+}
+```
+
+**Parent layout** (in the containing component e.g. `bt-feature`):
+```css
+%root%__stats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-m);
+}
+```
+
+**Modifiers live on `bt-stats`** — `bt-stats--large`, `bt-stats--light` etc. — not on the parent component.
 
 ---
 
@@ -791,6 +882,17 @@ Mode: Bricks-ready
 
 First component: [description or screenshot]
 ```
+
+### Iteration protocol — after first import
+
+Once a component has been imported into Bricks for the first time:
+
+1. **Copy the live component** out of Bricks (select all elements → copy)
+2. **Paste the live JSON back to Claude** — this syncs Bricks-generated IDs
+3. **All subsequent JSON output** will use those real IDs — no duplicate global classes on re-import
+
+**CSS-only changes** — edit directly in Bricks Global Classes panel. No re-import needed.
+**Structure changes** — request updated JSON with live IDs, then re-import. Verify global class CSS updated in panel after import — Bricks may skip existing IDs silently.
 
 ---
 
