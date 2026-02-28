@@ -103,6 +103,30 @@
 
 ---
 
+## CARDS — CLICKABLE PARENT
+
+### Use ACSS `clickable-parent` for full-card click areas
+- ACSS provides `clickable-parent` — a utility class that stretches a link's click area over its parent container
+- Apply `clickable-parent` to the `<a>` element inside the card, NOT to the card itself
+- This makes the entire card clickable without wrapping everything in an `<a>` tag
+- The link remains the semantic interactive element — better for accessibility and SEO
+- Docs: https://docs.automaticcss.com/3.0/mixins/clickable-parent
+
+```html
+<!-- Correct: clickable-parent on the link inside the card -->
+<li class="brxe-div bt-portfolio-card">
+  <h3 class="brxe-heading bt-portfolio-card__heading">[Client name]</h3>
+  <p class="brxe-text-basic bt-portfolio-card__tags">[Tags]</p>
+  <a class="brxe-text-link bt-portfolio-card__url clickable-parent" href="#">clienturl.co.nz</a>
+  <span class="brxe-text-basic bt-portfolio-card__arrow">↗</span>
+</li>
+```
+
+- Always use `clickable-parent` on cards that link to a destination — don't write custom `::after` overlays or wrap entire cards in `<a>` tags
+- The card needs `position: relative` for the overlay to work (ACSS card framework sets this automatically)
+
+---
+
 ## BRICKS JSON
 
 ### Element IDs must be 6-character lowercase alphanumeric
