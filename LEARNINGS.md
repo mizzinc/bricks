@@ -127,6 +127,20 @@
 
 ---
 
+## CONTENT GRID
+
+### Content Grid is opt-in, never automatic
+- "Default Sections to Content Grid" is OFF — do not assume sections are content grids
+- Default structure remains: `section → container → content`
+- Content Grid is used in specific cases only, e.g. single blog post templates where media needs to break wider than text
+- When Content Grid IS used, apply `.content-grid` to the relevant container
+- Children slot into the content zone by default; use `.content--feature`, `.content--feature-max`, `.content--full`, or `.content--full-safe` to break out
+- Programmatic breakout via `grid-column: feature | feature-max | full` in BEM CSS
+- Content Grid replaces the need for containers — the grid itself handles content-width and gutter
+- Docs: https://docs.automaticcss.com/3.0/grids/content-grid
+
+---
+
 ## BRICKS JSON
 
 ### Element IDs must be 6-character lowercase alphanumeric
