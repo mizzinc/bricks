@@ -14,6 +14,31 @@ This system provides two global utility classes that extend Bricks' native inter
 
 ---
 
+---
+
+## SCOPE — BRX-ANIMATE VS GSAP
+
+This system covers **Bricks native interactions only** — the built-in Enter viewport → 
+Start animation panel in Bricks Builder.
+
+GSAP is a separate animation system and may be used:
+- **Alongside** `.brx-animate` (e.g. GSAP handles hero timelines, `.brx-animate` handles 
+  scroll-triggered section elements)
+- **Instead of** `.brx-animate` (e.g. a component is fully GSAP-driven with no Bricks 
+  interactions at all)
+
+| System | Trigger mechanism | Timing control | Use case |
+|---|---|---|---|
+| `.brx-animate` | Bricks interaction panel | CSS variables | Simple scroll-triggered fade/slide-ins, stagger groups |
+| GSAP | JavaScript (ScrollTrigger, timelines) | JS config | Complex sequences, scrub animations, per-element choreography, anything requiring a timeline |
+
+**Never mix both systems on the same element.** Pick one per element. Mixing will produce 
+conflicting animation-duration and animation-delay values.
+
+> GSAP patterns are documented separately. See `GSAP.md` when available.
+
+---
+
 ## THE TWO CLASSES
 
 | Class | Applied to | Purpose |
