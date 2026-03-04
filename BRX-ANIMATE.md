@@ -1,30 +1,29 @@
 # BRX-ANIMATE.md — Bricks Native Interaction Animation Utilities
 ## Global animation helper classes for Bricks Builder interactions
-Version: 1.0 | Production-confirmed | Works alongside native Bricks interaction system
+Version: 1.1 | Production-confirmed | Works alongside native Bricks interaction system
 
 ---
 
 ## OVERVIEW
 
-This system provides two global utility classes that extend Bricks' native interaction panel with controlled, token-driven animation behaviour. It does **not** replace Bricks interactions — it wraps them with CSS variable control so duration, delay, timing, and stagger can be managed globally and overridden per-element without touching each interaction individually.
+This system provides two tiers of animation control for Bricks Builder native interactions.
+Tier 1 requires no extra classes. Tier 2 opts in for stagger and CSS variable timing control.
 
-**Live in:** Global CSS (Bricks > Settings > Custom Code, or a dedicated global class)  
-**Dependencies:** Bricks native interactions (Enter viewport → Start animation)  
+**Live in:** `global.css`
+**Dependencies:** Bricks native interactions (Enter viewport → Start animation)
 **No JavaScript required** — pure CSS cascade.
-
----
 
 ---
 
 ## SCOPE — BRX-ANIMATE VS GSAP
 
-This system covers **Bricks native interactions only** — the built-in Enter viewport → 
+This system covers **Bricks native interactions only** — the built-in Enter viewport →
 Start animation panel in Bricks Builder.
 
 GSAP is a separate animation system and may be used:
-- **Alongside** `.brx-animate` (e.g. GSAP handles hero timelines, `.brx-animate` handles 
+- **Alongside** `.brx-animate` (e.g. GSAP handles hero timelines, `.brx-animate` handles
   scroll-triggered section elements)
-- **Instead of** `.brx-animate` (e.g. a component is fully GSAP-driven with no Bricks 
+- **Instead of** `.brx-animate` (e.g. a component is fully GSAP-driven with no Bricks
   interactions at all)
 
 | System | Trigger mechanism | Timing control | Use case |
@@ -32,85 +31,70 @@ GSAP is a separate animation system and may be used:
 | `.brx-animate` | Bricks interaction panel | CSS variables | Simple scroll-triggered fade/slide-ins, stagger groups |
 | GSAP | JavaScript (ScrollTrigger, timelines) | JS config | Complex sequences, scrub animations, per-element choreography, anything requiring a timeline |
 
-**Never mix both systems on the same element.** Pick one per element. Mixing will produce 
-conflicting animation-duration and animation-delay values.
+**Never mix both systems on the same element.** Pick one per element. Mixing will produce
+conflicting `animation-duration` and `animation-delay` values.
 
 > GSAP patterns are documented separately. See `GSAP.md` when available.
 
 ---
 
-## THE TWO CLASSES
+## ANIMATION APPROACH — TWO TIERS
+
+### Tier 1 — Global keyframe override (zero-class, default)
+
+The `fadeInUp` keyframe is overridden globally in `global.css`. Any element with a
+Bricks interaction set to `fadeInUp` animates correctly without any extra class.
+
+**Use this for:** any single element that just needs a clean scroll-triggered fade-in.
+```
+Element
+  └─ No extra class needed
+  └─ Interaction: Enter viewport → Start animation → fadeInUp
+  └─ Duration:    Set in panel
+  └─ Delay:       Set in panel
+  └─ Run only once: ON
+```
+
+This is the default. Reach for Tier 2 only when you need stagger or global timing control.
+
+---
+
+### Tier 2 — `.brx-animate` (opt-in, stagger and variable timing control)
+
+Add `.brx-animate` when you need:
+- **Stagger** across a group of children
+- **CSS variable control** over duration/delay (global or per-element override)
+- **Consistent timing** across a component without touching each interaction panel
+
+**The two classes:**
 
 | Class | Applied to | Purpose |
 |---|---|---|
-| `.brx-animate` | The **element receiving the animation** | Sets up the CSS variable cascade for duration, delay, and timing |
-| `.brx-animate--stagger-delay` | The **parent container** | Auto-increments delay for each child via `:nth-child()` |
+| `.brx-animate` | The animated element | Hooks into CSS variable cascade for timing |
+| `.brx-animate--stagger-delay` | The parent container | Auto-increments delay per child |
 
----
-
-## CLASS 1 — `.brx-animate`
-
-Applied directly to any element that has a Bricks interaction set on it.
-
-### What it does
-
-Sets up a local CSS variable cascade so animation duration, delay, and timing-function can be controlled by:
-1. The global `:root` defaults (`--brx-animation-duration--fast`, `--brx-animation-duration--medium`, etc.)
-2. Per-component overrides at ID or unique class level via `--brx-animation-duration-base`, `--brx-animation-delay-base`, etc.
-
-The `.brx-animate.brx-animated` compound selector fires when Bricks adds the `.brx-animated` state class on interaction trigger, applying the resolved duration and delay.
-
-### Override variables (set at ID or parent class level)
-
-| Variable | Default | Purpose |
-|---|---|---|
-| `--brx-animation-duration-base` | `0.5s` | Base animation duration |
-| `--brx-animation-delay-base` | `0.25s` | Base animation delay |
-| `--brx-stagger-step-base` | `0.25s` | Increment between stagger steps |
-| `--brx-animation-timing-function-base` | `ease-out` | Easing function |
-
-### Global duration tokens (set in `:root`)
+### Single element with variable timing control
 ```
---brx-animation-duration--fast:    0.25s
---brx-animation-duration--medium:  0.5s
---brx-animation-duration--slow:    1s
---brx-animation-duration--slower:  2s
+Element
+  └─ Class:         brx-animate
+  └─ Interaction:   Enter viewport → Start animation → fadeInUp
+  └─ Duration:      blank  ← CSS var controls this
+  └─ Delay:         blank  ← CSS var controls this
+  └─ Run only once: ON
 ```
 
-### Per-element override pattern
-```css
-/* Set on the element's ID or a scoping class — NOT in the Bricks interaction panel */
-#my-element-id {
-  --brx-animation-duration-base: var(--brx-animation-duration--slow);
-  --brx-animation-delay-base: 0.4s;
-}
+### Staggered group
 ```
+Parent element
+  └─ Class:       brx-animate--stagger-delay
+  └─ No interaction on parent
 
----
-
-## CLASS 2 — `.brx-animate--stagger-delay`
-
-Applied to the **parent container** of a group of animated children.
-
-### What it does
-
-Uses `:nth-child()` counters to automatically increment `--brx-animation-delay-x` for each child. The `!important` on `animation-delay` ensures it overrides whatever delay is set in the Bricks interaction panel.
-
-Supports up to **10 children**. Beyond 10, stagger is not auto-incremented.
-
-### Stagger delay formula
-```
-Child 1:  delay = base-delay
-Child 2:  delay = stagger-step + base-delay
-Child N:  delay = ((N-1) × stagger-step) + base-delay
-```
-
-### Override stagger timing at component level
-```css
-#my-stagger-parent {
-  --brx-stagger-step-base: 0.15s;   /* tighter stagger */
-  --brx-animation-delay-base: 0s;   /* no initial offset */
-}
+Child elements (each)
+  └─ Class:         brx-animate
+  └─ Interaction:   Enter viewport → Start animation → fadeInUp
+  └─ Duration:      blank
+  └─ Delay:         0s  ← stagger CSS overrides via !important
+  └─ Run only once: ON
 ```
 
 ---
@@ -135,79 +119,132 @@ Custom keyframes that respect `--brx-transition-distance` (default: `20px`):
 
 ---
 
-## INTERACTION PANEL SETUP
+## CSS VARIABLE CASCADE (TIER 2)
 
-### Single element (no stagger)
+### How `--brx-animation-duration` resolves
 ```
-Element classes:  brx-animate
-Trigger:          Enter viewport
-Action:           Start animation
-Animation:        fadeInUp (or whichever direction)
-Duration:         Set here OR leave and control via CSS var
-Delay:            Set here OR leave and control via CSS var
-Run only once:    ON
-```
-
-### Staggered group
-```
-Parent element
-  └─ Classes:       brx-animate--stagger-delay
-  └─ No interaction on parent
-
-Child elements (each)
-  └─ Classes:       brx-animate
-  └─ Trigger:       Enter viewport → Start animation → fadeInUp
-  └─ Duration:      Leave blank (CSS var controls it) or set to override
-  └─ Delay:         0s  ← stagger CSS overrides this via !important
-  └─ Run only once: ON
+.brx-animate.brx-animated
+  └─ animation-duration: var(--brx-animation-duration)
+       └─ set on .brx-animate as:
+            var(--brx-animation-duration--base, 0.5s)
+                 └─ override at ID/class level:
+                      --brx-animation-duration--base: var(--brx-animation-duration--slow)
 ```
 
-> **Why 0s in the panel?** `.brx-animate--stagger-delay` overrides `animation-delay` with `!important` per child. The panel value is irrelevant once this class is on the parent — set it to `0s` to avoid confusion.
+### Override variables (set at ID or scoping class level)
 
----
-
-## SLIDER STAGGER
-
-The same stagger logic applies to Bricks/Splide slider slides:
-```
-Slider element
-  └─ Classes:  brxe-fr-slider brx-animate--stagger-delay
-
-Each slide
-  └─ Classes:  brx-animate
-  └─ Interaction: Enter viewport → Start animation
-```
-
----
-
-## WHAT TO SET / WHAT TO LEAVE IN THE PANEL
-
-| Field | Panel | CSS variable |
+| Variable | Default | Purpose |
 |---|---|---|
-| Trigger | ✅ Always set | — |
-| Animation name | ✅ Always set | — |
-| Duration | Optional override | `--brx-animation-duration-base` on ID/class |
-| Delay | **0s when using stagger** | `--brx-animation-delay-base` on parent ID |
-| Target | Self (default) | — |
-| Run only once | ✅ ON | — |
-| rootMargin | Optional — `0px 0px -50% 0px` for 50% in-view trigger | — |
+| `--brx-animation-duration--base` | `0.5s` | Base animation duration |
+| `--brx-animation-delay-base` | `0.25s` | Base animation delay |
+| `--brx-stagger-step-base` | `0.25s` | Increment between stagger steps |
+| `--brx-animation-timing-function-base` | `ease-out` | Easing function |
+
+### Global duration tokens (`:root`)
+```
+--brx-animation-duration--fast:    0.25s
+--brx-animation-duration--medium:  0.5s
+--brx-animation-duration--slow:    1s
+--brx-animation-duration--slower:  2s
+```
+
+Reference them in overrides:
+```css
+#my-element {
+  --brx-animation-duration--base: var(--brx-animation-duration--slow);
+  --brx-animation-delay-base: 0.4s;
+}
+```
+
+### Stagger timing override
+```css
+#my-stagger-parent {
+  --brx-stagger-step-base: 0.15s;
+  --brx-animation-delay-base: 0s;
+}
+```
+
+---
+
+## INTERACTION PANEL — WHAT TO SET / WHAT TO LEAVE
+
+| Field | Tier 1 | Tier 2 |
+|---|---|---|
+| Trigger | ✅ Enter viewport | ✅ Enter viewport |
+| Animation name | ✅ Set | ✅ Set |
+| Duration | Set in panel | **blank** — CSS var controls |
+| Delay | Set in panel | **blank** (stagger children: `0s`) |
+| Target | Self | Self |
+| Run only once | ✅ ON | ✅ ON |
+| rootMargin | Optional | Optional |
+
+> `0px 0px -50% 0px` triggers animation when 50% of the element is in view.
+
+---
+
+## MOVING `.brx-animate` INTO `global.css`
+
+The `.brx-animate` CSS should live in `global.css`, not as a Bricks global class.
+This makes it version-controlled, framework-independent, and always available site-wide.
+
+### Steps
+
+**1. Copy the full CSS block**
+From Bricks > Global Classes, open `.brx-animate` and copy all CSS from the
+`_cssCustom` field.
+
+**2. Paste into `global.css`**
+Place under a clearly labelled section header:
+```css
+/* ============================================================
+   BRX ANIMATE — Bricks interaction animation utilities
+   Tier 1: global fadeInUp keyframe override (no class needed)
+   Tier 2: .brx-animate + .brx-animate--stagger-delay (opt-in)
+   ============================================================ */
+```
+
+**3. Delete the Bricks global classes**
+Once confirmed working in the browser, delete `.brx-animate` and
+`.brx-animate--stagger-delay` from Bricks > Global Classes.
+
+**4. Audit elements before deleting**
+Elements that had `.brx-animate` applied as a Bricks global class will lose the
+class when the global class is deleted — Bricks removes the reference, not just
+the CSS. Before deleting:
+
+- Audit all elements using `.brx-animate` in the canvas
+- Re-apply it as a plain CSS class via the Bricks style panel (not a global class)
+
+> In Bricks, a global class and a plain CSS class of the same name are functionally
+> identical in the browser. Once the CSS lives in `global.css`, the class just needs
+> to exist on the element — it does not need to be a registered global class.
 
 ---
 
 ## CONFIRMED PRODUCTION BEHAVIOUR
 
-- `.brx-animated` is the state class Bricks adds on trigger. If animations aren't firing, confirm this class name in DevTools — if Bricks uses a different class in your build version, the duration/delay cascade won't apply.
-- `!important` on stagger delay/timing is intentional — it overrides Bricks' interaction panel inline values. Correct pattern, not a specificity hack.
-- In raw CSS source, `%root%` is Bricks global class self-reference. When registered as a Bricks global class, `%root%` resolves to `.brx-animate` or `.brx-animate--stagger-delay` respectively.
+- `.brx-animated` is the state class Bricks adds on trigger. Confirm this in DevTools
+  if animations aren't firing — if Bricks uses a different class name in your build,
+  the duration/delay cascade won't apply.
+- `!important` on stagger delay/timing is intentional — overrides Bricks' interaction
+  panel inline values. Correct pattern, not a specificity hack.
+- `prefers-reduced-motion` — ACSS collapses all animation durations to `0.01ms`
+  globally. This system inherits that behaviour automatically.
 
 ---
 
 ## GOTCHAS
 
-- **Do not set Duration/Delay in the panel AND via CSS variables** — the panel writes inline values that override the class. Use one or the other.
-- **10-child stagger limit** — `:nth-child()` rules cover 1–10. Beyond that, children animate without incremented delay.
-- **`prefers-reduced-motion`** — ACSS collapses all animation durations to `0.01ms` globally. This system inherits that. No extra work needed.
-- **Panel sets Duration to `1s` by default** (as shown in screenshot). If relying on CSS var control, clear this field or it will override the var.
+- **Tier 2 only: clear Duration and Delay in the panel** — the panel writes inline
+  values that win over the CSS class. Leave both blank so the CSS variable cascade
+  controls timing. The panel is for animation name and trigger only.
+- **10-child stagger limit** — `:nth-child()` rules cover 1–10. Beyond that, children
+  animate without incremented delay.
+- **Do not mix Tier 1 and Tier 2 on the same element** — if `.brx-animate` is present,
+  the panel duration/delay must be blank. If they're set, Tier 2 variable control is
+  bypassed silently.
+- **Variable name is double-dash before `base`** — `--brx-animation-duration--base`
+  not `--brx-animation-duration-base`. A single-dash typo silently falls back to `0.5s`.
 
 ---
 
@@ -219,15 +256,9 @@ Each slide
 | `ACSS-AUTO.md` | What ACSS handles automatically |
 | `ACSS-CHEATSHEET.md` | Utility classes and breakpoint syntax |
 | `OUTPUT-MODES.md` | Bricks-ready vs Standalone preview modes |
+| `GSAP.md` | GSAP animation patterns (when available) |
 
 ---
 
-*BRX-ANIMATE.md v1.0 — ingested from production CSS, March 2026*  
-*Source: `.brx-animate` and `.brx-animate--stagger-delay` global class CSS*
-```
-
----
-
-**To add to the project:** create a new file called `BRX-ANIMATE.md` in your project knowledge and paste the above. Then update the reference table in `RULES.md` Section 15 with this row:
-```
-| `BRX-ANIMATE.md` v1.0 | Bricks interaction animation utilities — `.brx-animate` + stagger system |
+*BRX-ANIMATE.md v1.1 — updated March 2026*
+*Tier 1 / Tier 2 split added. Migration to global.css instructions added.*
