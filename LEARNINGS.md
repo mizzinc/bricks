@@ -71,6 +71,70 @@
 
 ---
 
+## BRICKS ELEMENT DEFAULTS
+
+### `brxe-block` and `brxe-container` own `display: flex; flex-direction: column`
+Bricks applies layout defaults via `@layer bricks` — confirmed from production DevTools:
+
+```css
+@layer bricks {
+  .brxe-block {
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+}
+
+@layer bricks {
+  .brxe-container {
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+    margin-left: auto;
+    margin-right: auto;
+    width: 1100px;
+  }
+}
+```
+
+**Never write `display: flex` or `flex-direction: column` on BEM classes applied to `block` or `container` elements.** Only write what you're overriding from the Bricks default:
+
+```css
+/* WRONG — Bricks already applies these */
+%root%__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-l);
+}
+
+/* CORRECT — gap is not a Bricks default, write it; display/direction are, omit them */
+%root%__content {
+  gap: var(--space-l);
+}
+
+/* CORRECT — changing direction IS an override, write it */
+%root%__cta {
+  flex-direction: row;
+  gap: var(--space-s);
+}
+```
+
+### `brxe-div` has no layout defaults
+- Use `brxe-div` whenever you need `display: grid` or any layout that would fight against the block/container flex default
+- Must declare `display: grid` (or `display: flex` for a non-column flex context) explicitly in BEM CSS
+
+### Element selection guide
+| Need | Use |
+|---|---|
+| Content group, column of text/buttons, flex column | `brxe-block` |
+| Max-width section wrapper | `brxe-container` |
+| CSS grid container | `brxe-div` |
+| Flex row (non-column), icon group, tag list | `brxe-div` (declare `display: flex; flex-direction: row`) |
+| Generic non-layout wrapper | `brxe-div` |
+
+---
+
 ## CSS PATTERNS
 
 ### Don't declare card padding or gap when ACSS Card Framework is active
@@ -153,22 +217,31 @@
 ## ANIMATIONS
 
 ### `_interactions` — confirmed pattern from live JSON
-- Animation is wired via `_interactions` array on the element in JSON, never via a manually authored class
-- Bricks adds `brx-animate` to the element automatically when `_interactions` is present — never add it to `_cssGlobalClasses`
-- `data-interaction-hidden-on-load="1"` must be present on any animated element — prevents flash of content before animation fires. Bricks sets this automatically via the panel; when authoring JSON manually it must be included explicitly.
+- Animation is wired via `_interactions` array on the element — never via a manually authored class
+- Bricks adds `brx-animate` automatically when `_interactions` is present — never add to `_cssGlobalClasses`
+- `data-interaction-hidden-on-load="1"` must be present on animated elements — prevents FOUC. Bricks sets this automatically via the panel; must be included explicitly when authoring JSON manually
 
-Confirmed `_interactions` object shape from live production schema:
+Confirmed shape:
 ```json
 {
-  "id": "xxxxxx",
-  "trigger": "enterView",
-  "action": "startAnimation",
-  "animationType": "fadeInUp"
+  "_interactions": [
+    {"id": "k7mx2p", "trigger": "enterView", "action": "startAnimation", "animationType": "fadeInUp"}
+  ]
 }
 ```
 
-- Each interaction entry requires its own unique 6-char alphanumeric `id`
-- `data-animation-id` on the HTML element matches this `id` value — Bricks sets this automatically
+- Each entry needs a unique 6-char lowercase alphanumeric `id`
+- `data-animation-id` on the HTML element matches this `id` — Bricks sets automatically via panel, must be set explicitly in hand-authored JSON
+
+### Stagger pattern
+- Parent container gets `brx-animate--stagger-delay` applied via the Bricks style panel after import — never in JSON `_cssGlobalClasses`
+- Each child gets its own `_interactions` entry
+- Do NOT set Duration or Delay in the Bricks panel for stagger children — leave both blank so the CSS variable cascade controls timing
+- The parent does NOT get `_interactions`
+
+### Interaction IDs
+- All `_interactions` entry IDs and element IDs: 6-char lowercase alphanumeric, randomised
+- Never use obvious placeholders like `aaaaaa` or `xxxxxx` in final JSON output
 
 ---
 
