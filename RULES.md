@@ -1,8 +1,8 @@
 # RULES.md
 # Claude Project: Bricks Builder — Code Generation Rules
 # Author: Michael van Dinther / Mizzinc
-# Version: 2.0
-# Last updated: February 2026
+# Version: 2.2
+# Last updated: March 2026
 
 ---
 
@@ -61,17 +61,17 @@ Every element carries its Bricks element class **first**, followed by BEM class(
 
 ### Layout
 
-| Element | Rendered as | Bricks class | JSON `settings` |
+| Element | Rendered as | Bricks class | Bricks default CSS |
 |---|---|---|---|
-| `section` | `<section>` | `brxe-section` | `{}` — root has `parent: 0` (integer) |
-| `container` | `<div>` | `brxe-container` | `{}` |
-| `block` | `<div>` | `brxe-block` | `{}` — flex layout |
-| `div` | `<div>` | `brxe-div` | `{}` — grid / generic |
+| `section` | `<section>` | `brxe-section` | No layout defaults. Root has `parent: 0` (integer) |
+| `container` | `<div>` | `brxe-container` | `display: flex; flex-direction: column; align-items: flex-start; margin-inline: auto; width: 1100px` |
+| `block` | `<div>` | `brxe-block` | `display: flex; flex-direction: column; align-items: flex-start; width: 100%` |
+| `div` | `<div>` | `brxe-div` | No layout defaults |
 
-- `block` = flex rows/columns and content groups
-- `div` = CSS grid containers and non-flex wrappers
-- `container` = max-width wrapper, `margin-inline: auto` — one per section
-- Root `section` always has `"parent": 0` (integer zero, not a string)
+- `block` = Bricks applies `display: flex; flex-direction: column` automatically. Use for content groups, flex rows/columns. **Never write `display: flex` or `flex-direction: column` in BEM CSS for a block element** — override only what differs (e.g. `flex-direction: row`, `align-items: center`)
+- `container` = Bricks applies `display: flex; flex-direction: column` automatically, plus `margin-inline: auto` and `width: 1100px`. Use as the max-width wrapper inside every section. One per section. **Same rule — never redeclare what Bricks already applies**
+- `div` = No layout defaults from Bricks. Use when you need `display: grid`, a non-flex wrapper, or any layout the block element's flex default would fight against
+- `section` = No layout defaults. Root `section` always has `"parent": 0` (integer zero, not a string)
 
 ### Text & Typography
 
@@ -220,13 +220,22 @@ When generating JSON that would normally use an `icon` element, use `svg` or `di
 ```html
 <section class="brxe-section bt-hero" aria-labelledby="bt-hero-heading">
   <div class="brxe-container bt-hero__wrap">
-    <div class="brxe-block bt-hero__content" data-interactions="[{&quot;id&quot;:&quot;xxxxxx&quot;,&quot;trigger&quot;:&quot;enterView&quot;,&quot;action&quot;:&quot;startAnimation&quot;,&quot;animationType&quot;:&quot;fadeInUp&quot;}]" data-interaction-hidden-on-load="1" data-animation-id="xxxxxx">
+    <div class="brxe-block bt-hero__content"
+      data-interactions="[{&quot;id&quot;:&quot;xxxxxx&quot;,&quot;trigger&quot;:&quot;enterView&quot;,&quot;action&quot;:&quot;startAnimation&quot;,&quot;animationType&quot;:&quot;fadeInUp&quot;}]"
+      data-interaction-hidden-on-load="1"
+      data-animation-id="xxxxxx">
       <h1 class="brxe-heading bt-hero__heading" id="bt-hero-heading">Heading</h1>
       <p class="brxe-text-basic bt-hero__accent-heading">Est. 2006 — New Zealand</p>
     </div>
     <div class="brxe-block bt-hero__content">
-      <p class="brxe-text-basic bt-hero__lead" data-interactions="[{&quot;id&quot;:&quot;xxxxxx&quot;,&quot;trigger&quot;:&quot;enterView&quot;,&quot;action&quot;:&quot;startAnimation&quot;,&quot;animationType&quot;:&quot;fadeInUp&quot;}]" data-interaction-hidden-on-load="1" data-animation-id="xxxxxx">Lead copy.</p>
-      <div class="brxe-div bt-hero__meta" data-interactions="[{&quot;id&quot;:&quot;xxxxxx&quot;,&quot;trigger&quot;:&quot;enterView&quot;,&quot;action&quot;:&quot;startAnimation&quot;,&quot;animationType&quot;:&quot;fadeInUp&quot;}]" data-interaction-hidden-on-load="1" data-animation-id="xxxxxx">
+      <p class="brxe-text-basic bt-hero__lead"
+        data-interactions="[{&quot;id&quot;:&quot;xxxxxx&quot;,&quot;trigger&quot;:&quot;enterView&quot;,&quot;action&quot;:&quot;startAnimation&quot;,&quot;animationType&quot;:&quot;fadeInUp&quot;}]"
+        data-interaction-hidden-on-load="1"
+        data-animation-id="xxxxxx">Lead copy.</p>
+      <div class="brxe-div bt-hero__meta"
+        data-interactions="[{&quot;id&quot;:&quot;xxxxxx&quot;,&quot;trigger&quot;:&quot;enterView&quot;,&quot;action&quot;:&quot;startAnimation&quot;,&quot;animationType&quot;:&quot;fadeInUp&quot;}]"
+        data-interaction-hidden-on-load="1"
+        data-animation-id="xxxxxx">
         <p class="brxe-text-basic bt-hero__meta-name"><strong>Michael van Dinther</strong></p>
         <p class="brxe-text-basic bt-hero__meta-position">WordPress Developer</p>
       </div>
@@ -265,6 +274,9 @@ When outputting Bricks JSON (copy/paste schema), follow this exact structure. Th
     "_attributes": [                   // optional — for aria etc.
       {"id": "xxxxxx", "name": "aria-labelledby", "value": "bt-[name]-heading"}
     ],
+    "_interactions": [                 // optional — for enterView animations
+      {"id": "xxxxxx", "trigger": "enterView", "action": "startAnimation", "animationType": "fadeInUp"}
+    ],
     "tag": "h1",           // only for heading/text-basic elements
     "text": "Content here" // only for heading/text-basic elements
   },
@@ -297,11 +309,17 @@ An element's `_cssGlobalClasses: ["zawhlo"]` means: apply the global class whose
 ```json
 "_cssGlobalClasses": ["zwkehy"]
 // zwkehy → bt-hero__content
-// brx-animate is added automatically by Bricks when _interactions is present
+// brx-animate is added automatically by Bricks when _interactions is present — never author it manually
 ```
 
-**4. Shared utility classes live as separate global class objects.**
-`brx-animate` is added automatically by Bricks when `_interactions` is configured on an element. Do not add it manually to `_cssGlobalClasses`. The global class `vcvrjs` carries the full CSS and must exist in the project — but it is never referenced directly in authored JSON.
+**4. Animations are wired via `_interactions` — never via a class.**
+Bricks adds `brx-animate` to the element automatically when `_interactions` is configured. Do not add it manually to `_cssGlobalClasses`. The global class `vcvrjs` carries the full `brx-animate` CSS and must exist in the project — but it is never referenced directly in authored JSON.
+
+```json
+// Animated element — _interactions only, no brx-animate in _cssGlobalClasses
+"_cssGlobalClasses": ["zwkehy"],
+"_interactions": [{"id": "xxxxxx", "trigger": "enterView", "action": "startAnimation", "animationType": "fadeInUp"}]
+```
 
 **5. `_cssId` is only for accessibility targets.**
 Only heading elements that are referenced by `aria-labelledby` get a `_cssId`. Never use `_cssId` for styling.
@@ -910,10 +928,10 @@ Output in this order:
   COMPONENT: bt-[name]
   brxe-section      → bt-[name]               (holds all CSS)
   brxe-container    → bt-[name]__wrap
-  brxe-block        → bt-[name]__content      
-  brxe-heading      → bt-[name]__heading      (h1, id for aria) (enterView → fadeInUp via _interactions)
+  brxe-block        → bt-[name]__content      (enterView → fadeInUp via _interactions)
+  brxe-heading      → bt-[name]__heading      (h1, id for aria)
   brxe-text-basic   → bt-[name]__accent-heading
-  brxe-text-basic   → bt-[name]__lead         (enterView → fadeInUp via _interactions)
+  brxe-text-basic   → bt-[name]__lead
   brxe-div          → bt-[name]__meta         (enterView → fadeInUp via _interactions)
   brxe-text-basic   → bt-[name]__meta-name
   brxe-text-basic   → bt-[name]__meta-position
@@ -1054,6 +1072,8 @@ font-weight: 500;
 - Do not hardcode class names inside a global class CSS block — always use `%root%` for every selector
 - Do not use `!important` to override framework specificity — use double selector instead: `%root%-card%root%-card`
 - Do not apply `position: sticky` inside a container with `overflow: hidden` — sticky will silently break. Always `overflow: unset` the container first.
+- Do not add `brx-animate` to `_cssGlobalClasses` — Bricks applies it automatically when `_interactions` is present. Never author it manually.
+- Do not write `display: flex` or `flex-direction: column` in BEM CSS for `block` or `container` elements — Bricks applies both automatically via `@layer bricks`. Only write flex overrides: `flex-direction: row`, `align-items: center`, `gap`, etc.
 
 ---
 
@@ -1065,10 +1085,11 @@ font-weight: 500;
 | `ACSS-AUTO.md` v1.0 | What ACSS handles automatically — do not duplicate |
 | `ACSS-CHEATSHEET.md` v1.0 | All utility classes + breakpoint modifier syntax |
 | `OUTPUT-MODES.md` v1.0 | Bricks-ready vs Standalone preview modes |
+| `BRX-ANIMATE.md` v1.1 | Bricks native interaction animation system — Tier 1 and Tier 2 patterns |
 
 ---
 
-
-End of RULES.md — version 2.3
-Update: Removed bt-fade-in throughout. Animation now via _interactions + brx-animate (auto-applied by Bricks). See BRX-ANIMATE.md.
-Added BRX-ANIMATE.md to reference files table.
+*End of RULES.md — version 2.2*
+*Update: Removed bt-fade-in throughout. Animation now via _interactions + brx-animate (auto-applied by Bricks). See BRX-ANIMATE.md.*
+*Added BRX-ANIMATE.md to reference files table.*
+*v2.2: Section 2 layout table updated with confirmed Bricks default CSS for block and container (display: flex; flex-direction: column — both elements). Section 14 updated accordingly.*
