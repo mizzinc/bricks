@@ -150,4 +150,26 @@
 
 ---
 
+## ANIMATIONS
+
+### `_interactions` — confirmed pattern from live JSON
+- Animation is wired via `_interactions` array on the element in JSON, never via a manually authored class
+- Bricks adds `brx-animate` to the element automatically when `_interactions` is present — never add it to `_cssGlobalClasses`
+- `data-interaction-hidden-on-load="1"` must be present on any animated element — prevents flash of content before animation fires. Bricks sets this automatically via the panel; when authoring JSON manually it must be included explicitly.
+
+Confirmed `_interactions` object shape from live production schema:
+```json
+{
+  "id": "xxxxxx",
+  "trigger": "enterView",
+  "action": "startAnimation",
+  "animationType": "fadeInUp"
+}
+```
+
+- Each interaction entry requires its own unique 6-char alphanumeric `id`
+- `data-animation-id` on the HTML element matches this `id` value — Bricks sets this automatically
+
+---
+
 *End of LEARNINGS.md*
