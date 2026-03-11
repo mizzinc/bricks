@@ -276,7 +276,23 @@ Labels are for the Bricks structure panel only. Keep them short and clean:
 "label": "Media"
 ```
 
-Never write FLAGs or instructions in labels. If something needs flagging, note it outside the JSON output.
+Never write FLAGs or instructions in labels.
+
+### `adminNotes` — use for FLAGS, not labels
+Every Bricks element supports an `adminNotes` field in `settings`. This is the correct place for FLAGS, review notes, and developer instructions. Visible in the Bricks panel as a note on the element.
+
+```json
+"settings": {
+  "_cssGlobalClasses": ["bt1hero"],
+  "adminNotes": "FLAG: confirm display heading scale with client. Consider adding --display token to ACSS."
+}
+```
+
+Use `adminNotes` for:
+- Design decisions that need client or developer review
+- Reminders to add missing content (SVG, copy placeholders)
+- Any note that would otherwise clutter a label or appear as a CSS comment
+- Never write these in `label` — labels are structure-panel identifiers only
 
 ### Button — use `text-link` with ACSS classes, not `button` element
 Bricks wires ACSS button styles via `text-link` + global classes, not the native `button` element:
