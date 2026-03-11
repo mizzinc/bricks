@@ -220,13 +220,13 @@ When generating JSON that would normally use an `icon` element, use `svg` or `di
 ```html
 <section class="brxe-section bt-hero" aria-labelledby="bt-hero-heading">
   <div class="brxe-container bt-hero__wrap">
-    <div class="brxe-block bt-hero__content bt-fade-in">
+    <div class="brxe-block bt-hero__content" data-interactions="[{&quot;id&quot;:&quot;xxxxxx&quot;,&quot;trigger&quot;:&quot;enterView&quot;,&quot;action&quot;:&quot;startAnimation&quot;,&quot;animationType&quot;:&quot;fadeInUp&quot;}]" data-interaction-hidden-on-load="1" data-animation-id="xxxxxx">
       <h1 class="brxe-heading bt-hero__heading" id="bt-hero-heading">Heading</h1>
       <p class="brxe-text-basic bt-hero__accent-heading">Est. 2006 — New Zealand</p>
     </div>
-    <div class="brxe-block bt-hero__content bt-fade-in">
-      <p class="brxe-text-basic bt-hero__lead">Lead copy.</p>
-      <div class="brxe-div bt-hero__meta bt-fade-in">
+    <div class="brxe-block bt-hero__content">
+      <p class="brxe-text-basic bt-hero__lead" data-interactions="[{&quot;id&quot;:&quot;xxxxxx&quot;,&quot;trigger&quot;:&quot;enterView&quot;,&quot;action&quot;:&quot;startAnimation&quot;,&quot;animationType&quot;:&quot;fadeInUp&quot;}]" data-interaction-hidden-on-load="1" data-animation-id="xxxxxx">Lead copy.</p>
+      <div class="brxe-div bt-hero__meta" data-interactions="[{&quot;id&quot;:&quot;xxxxxx&quot;,&quot;trigger&quot;:&quot;enterView&quot;,&quot;action&quot;:&quot;startAnimation&quot;,&quot;animationType&quot;:&quot;fadeInUp&quot;}]" data-interaction-hidden-on-load="1" data-animation-id="xxxxxx">
         <p class="brxe-text-basic bt-hero__meta-name"><strong>Michael van Dinther</strong></p>
         <p class="brxe-text-basic bt-hero__meta-position">WordPress Developer</p>
       </div>
@@ -295,13 +295,13 @@ An element's `_cssGlobalClasses: ["zawhlo"]` means: apply the global class whose
 
 **3. Multiple global classes per element are valid.**
 ```json
-"_cssGlobalClasses": ["zwkehy", "whlsuv"]
+"_cssGlobalClasses": ["zwkehy"]
 // zwkehy → bt-hero__content
-// whlsuv → bt-fade-in  (shared utility class, no CSS, just a JS hook)
+// brx-animate is added automatically by Bricks when _interactions is present
 ```
 
 **4. Shared utility classes live as separate global class objects.**
-`bt-fade-in` (animation trigger) is its own global class with `"settings": []` — no CSS. Applied to multiple elements via their `_cssGlobalClasses` array.
+`brx-animate` is added automatically by Bricks when `_interactions` is configured on an element. Do not add it manually to `_cssGlobalClasses`. The global class `vcvrjs` carries the full CSS and must exist in the project — but it is never referenced directly in authored JSON.
 
 **5. `_cssId` is only for accessibility targets.**
 Only heading elements that are referenced by `aria-labelledby` get a `_cssId`. Never use `_cssId` for styling.
@@ -330,7 +330,7 @@ bt-[block]__[element]--[modifier]
 - Modifier = variant or state (`--dark`, `--featured`, `--active`)
 - **No positional names** (`__left`, `__right`, `__top`, `__bottom`)
 - **No layout names** — `__inner` → `__wrap`
-- `bt-fade-in` = shared utility class (no BEM — it's a global hook, not component-scoped)
+- Animation is handled via `_interactions` on the element — see `BRX-ANIMATE.md`. Bricks adds `brx-animate` automatically when an interaction is configured. Never author this class manually.
 
 ---
 
@@ -531,7 +531,6 @@ Each modifier is its own global class object. Both are applied via `_cssGlobalCl
 
 | Class | Use when |
 |---|---|
-| `bt-fade-in` | Animation trigger — JS hook. No CSS. Apply to any element. |
 | `bt-section-kicker` | Overline label above a section. Flex row with rule line. |
 | `grid--borders` | Shared borders on flush grid layouts — no doubling. Apply to the grid container. |
 | `bt-stats` | Reusable animated stat display — counter + prefix/suffix + label. Use anywhere stats appear. |
@@ -911,11 +910,11 @@ Output in this order:
   COMPONENT: bt-[name]
   brxe-section      → bt-[name]               (holds all CSS)
   brxe-container    → bt-[name]__wrap
-  brxe-block        → bt-[name]__content      + bt-fade-in
-  brxe-heading      → bt-[name]__heading      (h1, id for aria)
+  brxe-block        → bt-[name]__content      
+  brxe-heading      → bt-[name]__heading      (h1, id for aria) (enterView → fadeInUp via _interactions)
   brxe-text-basic   → bt-[name]__accent-heading
-  brxe-text-basic   → bt-[name]__lead
-  brxe-div          → bt-[name]__meta         + bt-fade-in
+  brxe-text-basic   → bt-[name]__lead         (enterView → fadeInUp via _interactions)
+  brxe-div          → bt-[name]__meta         (enterView → fadeInUp via _interactions)
   brxe-text-basic   → bt-[name]__meta-name
   brxe-text-basic   → bt-[name]__meta-position
 ============================================================ -->
