@@ -216,32 +216,84 @@ Bricks applies layout defaults via `@layer bricks` — confirmed from production
 
 ## ANIMATIONS
 
-### `_interactions` — confirmed pattern from live JSON
-- Animation is wired via `_interactions` array on the element — never via a manually authored class
-- Bricks adds `brx-animate` automatically when `_interactions` is present — never add to `_cssGlobalClasses`
-- `data-interaction-hidden-on-load="1"` must be present on animated elements — prevents FOUC. Bricks sets this automatically via the panel; must be included explicitly when authoring JSON manually
+### `_interactions` + `brx-animate` — confirmed pattern from live JSON
 
-Confirmed shape:
+**`brx-animate` is NOT auto-applied by Bricks.** It must be explicitly added to `_cssGlobalClasses` on every animated element, alongside the BEM class. Confirmed from live import:
+
 ```json
-{
-  "_interactions": [
-    {"id": "k7mx2p", "trigger": "enterView", "action": "startAnimation", "animationType": "fadeInUp"}
-  ]
-}
+"_cssGlobalClasses": ["bt1hdng", "vcvrjs"],
+"_interactions": [
+  {"id": "k7mx2p", "trigger": "enterView", "action": "startAnimation", "animationType": "fadeInUp"}
+]
 ```
 
-- Each entry needs a unique 6-char lowercase alphanumeric `id`
-- `data-animation-id` on the HTML element matches this `id` — Bricks sets automatically via panel, must be set explicitly in hand-authored JSON
+- `vcvrjs` is the live project ID for the `brx-animate` global class — always include it on animated elements
+- `_interactions` and `_cssGlobalClasses: [..., "vcvrjs"]` always appear together on the same element
 
-### Stagger pattern
-- Parent container gets `brx-animate--stagger-delay` applied via the Bricks style panel after import — never in JSON `_cssGlobalClasses`
-- Each child gets its own `_interactions` entry
-- Do NOT set Duration or Delay in the Bricks panel for stagger children — leave both blank so the CSS variable cascade controls timing
-- The parent does NOT get `_interactions`
+### Stagger pattern — confirmed from live JSON
+
+`brx-animate--stagger-delay` CAN and SHOULD be added via `_cssGlobalClasses` in JSON output. It registers as its own global class object with empty settings:
+
+```json
+{"id": "cavsdm", "name": "brx-animate--stagger-delay", "settings": {}}
+```
+
+Applied to the content block alongside the BEM class:
+```json
+"_cssGlobalClasses": ["bt1cont", "cavsdm"]
+```
+
+- Parent gets `brx-animate--stagger-delay` in `_cssGlobalClasses` — no `_interactions` on the parent
+- Each child gets `_interactions` + `vcvrjs` (`brx-animate`) in `_cssGlobalClasses`
+- Do NOT set Duration or Delay in the panel for stagger children
 
 ### Interaction IDs
 - All `_interactions` entry IDs and element IDs: 6-char lowercase alphanumeric, randomised
 - Never use obvious placeholders like `aaaaaa` or `xxxxxx` in final JSON output
+
+---
+
+## BRICKS JSON
+
+### `%root%` does NOT work in `_cssCustom`
+`%root%` is a Bricks Global Classes panel UI shorthand — it does not survive JSON import. Always use the hardcoded class name in `_cssCustom`:
+
+```json
+"_cssCustom": ".bt-hero {\n  min-height: 60vh;\n}\n.bt-hero__wrap {\n  flex-direction: row;\n}"
+```
+
+Never use `%root%` in authored JSON. Only use it when editing CSS directly inside the Bricks Global Classes panel.
+
+### Element labels — keep them plain
+Labels are for the Bricks structure panel only. Keep them short and clean:
+
+```
+"label": "Hero"
+"label": "Wrap"
+"label": "Content"
+"label": "Heading"
+"label": "Lead"
+"label": "Media"
+```
+
+Never write FLAGs or instructions in labels. If something needs flagging, note it outside the JSON output.
+
+### Button — use `text-link` with ACSS classes, not `button` element
+Bricks wires ACSS button styles via `text-link` + global classes, not the native `button` element:
+
+```json
+{
+  "name": "text-link",
+  "settings": {
+    "text": "Get started in 2 minutes",
+    "link": {"type": "external", "url": "#", "rel": "nofollow", "ariaLabel": "...", "title": "..."},
+    "_cssGlobalClasses": ["acss_import_btn--primary", "acss_import_btn--outline", "vcvrjs"],
+    "_interactions": [{"id": "ngnbpi", "trigger": "enterView", "action": "startAnimation", "animationType": "fadeInUp"}]
+  }
+}
+```
+
+ACSS button global class IDs follow the pattern `acss_import_btn--[style]`.
 
 ---
 
