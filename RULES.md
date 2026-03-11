@@ -1068,6 +1068,7 @@ font-weight: 500;
 
 ---
 
-*End of RULES.md — version 2.2*
-*Update: Added primary workflow (Section 1a) — design-to-code, never stall on ambiguity.*
-*Added CSS resolution hierarchy: utility class → ACSS variable → raw value + FLAG.*
+
+End of RULES.md — version 2.3
+Update: Removed bt-fade-in throughout. Animation now via _interactions + brx-animate (auto-applied by Bricks). See BRX-ANIMATE.md.
+Added BRX-ANIMATE.md to reference files table.
