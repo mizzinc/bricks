@@ -15,6 +15,29 @@ ACSS is NOT utility-first. The correct workflow is:
 
 ---
 
+## 0. PROJECT FEATURE STATE — Mizzinc
+
+These settings rarely change. Update this section only when toggling features in the ACSS dashboard.
+Claude reads this once and applies it to all output — no need to paste at session start.
+
+| Feature | State | Notes |
+|---|---|---|
+| Auto Contextual Spacing | OFF | Controls section→container→content gap cascade |
+| Card Framework | ON | Auto card styling on matching classes |
+| Manual Card Selectors | `bt-portfolio-card, bt-service-card or add .card to every card, much easier` | Classes explicitly opted in — update as new card components are built |
+| Icon Framework | ON | Auto icon styling via `data-icon` attribute |
+| Form Styling | ON | Auto form element styling |
+| Auto Radius on img/figure | OFF | Applies `var(--radius)` to images automatically |
+| Content Grid default | OFF | Whether sections default to content-grid layout |
+| Flex Grid | ON | Enables `.flex-grid--*` utility classes |
+
+> **Impact on output:** When a feature is ON, Claude omits the CSS it handles automatically.
+> When OFF, Claude writes that CSS explicitly and FLAGs it: `/* ACSS [feature] is OFF — written manually */`
+
+---
+
+---
+
 ## 1. TYPOGRAPHY — ACSS OWNS ALL OF THIS BY DEFAULT
 
 Do NOT declare any of the following unless you are explicitly overriding a global default for a specific component.
