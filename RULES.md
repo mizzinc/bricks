@@ -88,6 +88,68 @@ Every element carries its Bricks element class **first**, followed by BEM class(
 - `div`: must declare display, direction, alignment — nothing is inherited from Bricks
 - Use `div` when you need `display: grid` — avoids fighting the block/container flex default
 
+### Component identification — when building a section
+
+When building a section, identify which parts are **components** before writing 
+any code. A component is any self-contained unit that:
+
+1. **Appears in more than one parent** — stats in hero AND features, kicker 
+   across all sections, testimonial quote in multiple pages
+2. **Has its own modifiers** — needs `--large`, `--light` variants independent 
+   of the parent section
+3. **Has internal structure** — 3+ child elements with their own layout logic
+4. **Maps to a recognisable UI pattern** — accordion, tabs, slider, counter, 
+   form, pricing table, toggle, countdown
+
+If none of these apply, it stays as a BEM child of the section block. Don't 
+preemptively extract — wait until the second usage before promoting a child 
+to its own block.
+
+### Component resolution — Bricks native first
+
+Once a component is identified, check whether Bricks provides a native element 
+before building custom. Native elements handle accessibility, responsive 
+behaviour, and interaction states that are expensive to recreate.
+
+**Always use the native Bricks element when available:**
+
+| Pattern | Bricks element | Don't build from |
+|---|---|---|
+| Animated number | `counter` | text-basic + JS |
+| Collapsible content | `accordion-nestable` | toggle divs + custom JS |
+| Tabbed content | `tabs-nestable` | divs + custom JS |
+| Image/content slider | `slider-nestable` | carousel + custom JS |
+| Content toggle (dark/light, monthly/annual) | `toggle-mode` | checkbox + custom JS |
+| Collapsible panel | `toggle` | div + custom JS |
+| Star/score display | `rating` | SVG icons manually |
+| Step-by-step list | `icon-list` | div + text-basic rows |
+| Countdown timer | `countdown` | text-basic + JS |
+| Animated text reveal | `anim-typing` | text-basic + JS |
+| Progress indicator | `progress-bar` | div + width animation |
+| Data comparison | `pricing-tables` | grid + manual markup |
+| Image lightbox/gallery | `image-gallery` | image + custom modal |
+| Contact/input collection | `form` | HTML inputs manually |
+| Navigation menu | `nav-nestable` | list + custom links |
+| Off-screen panel | `offcanvas` | fixed div + JS toggle |
+| Breadcrumb trail | `breadcrumbs` | text-basic links |
+| Team member cards | `team-members` | div + image + text |
+| Testimonial display | `testimonials` | blockquote manually |
+| Pie/donut chart | `pie-chart` | SVG + custom code |
+| Back to top button | `back-to-top` | fixed anchor + JS |
+| Dropdown content | `dropdown` | div + JS visibility |
+
+**Build custom when:**
+- The native element doesn't support the design requirements (e.g. slider 
+  needs custom external nav — use native slider + custom nav components)
+- No native element exists for the pattern
+- The native element's markup or styling can't be overridden sufficiently
+
+**When using native elements inside a section:**
+- The native element still gets a BEM class scoped to the section: 
+  `bt-pricing__accordion` on an `accordion-nestable`
+- Section-level CSS overrides go in the section's root global class
+- The native element handles its own internal behaviour — don't fight it
+
 ### Text & Typography
 
 | Element | Rendered as | Bricks class | JSON `settings` |
