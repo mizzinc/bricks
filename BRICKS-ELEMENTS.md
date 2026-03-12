@@ -1,6 +1,6 @@
 # BRICKS-ELEMENTS.md — Element Reference & Component Identification
-## Native Bricks elements, JSON schemas, and component selection rules
-Version: 1.0 | Last updated: March 2026
+## Native Bricks elements, custom components, JSON schemas, and component selection rules
+Version: 1.1 | Last updated: March 2026
 
 ---
 
@@ -26,7 +26,7 @@ Once a component is identified, check whether Bricks provides a native element b
 | Pattern | Bricks element | Don't build from |
 |---|---|---|
 | Animated number | `counter` | text-basic + JS |
-| Collapsible content | `accordion-nested` | toggle divs + custom JS |
+| Collapsible content / FAQ | `bt-accordion` (custom) | Native `accordion-nested` is limited — use custom build. See Section 17 |
 | Tabbed content | `tabs-nested` | divs + custom JS |
 | Image/content slider | `slider-nested` | carousel + custom JS |
 | Content toggle (dark/light, monthly/annual) | `toggle-mode` | checkbox + custom JS |
@@ -547,11 +547,310 @@ Links Google Map and Leaflet map elements. No required settings.
 
 ---
 
-## 16. ELEMENTS PENDING DOCUMENTATION
+## 16. CUSTOM COMPONENTS
+
+Custom-built components that replace or extend native Bricks elements. These use standard Bricks elements (`block`, `div`, `heading`, `text`) with custom JS in a `code` element.
+
+---
+
+### 17. ACCORDION — `bt-accordion` (custom)
+
+Custom accordion built from standard Bricks elements. Replaces the native `accordion-nested` which is limited in layout control, schema support, and styling flexibility.
+
+#### Why custom over native
+- Full control over header layout (grid with asymmetric columns)
+- Built-in FAQ structured data (`application/ld+json`) via `bt-faq-schema` attribute
+- Configurable behaviour via data attributes — no JS editing needed per instance
+- Semantic `ul` > `li` structure
+- Accessible: `role="button"`, `tabindex`, `aria-expanded` on headers; `role="region"` on body
+
+#### Structure
+```
+block (ul)         bt-accordion                    ← parent, holds config attributes
+  block (li)       bt-accordion__item              ← repeating item
+    block          bt-accordion__header            ← click target, grid layout
+      heading      bt-accordion__title             ← h3 (or appropriate level)
+      block        bt-accordion__header-wrap       ← flex row: subtitle + icon
+        text-basic                                 ← subtitle / meta text
+        div        fr-accordion__icon-wrapper      ← plus/minus icon container
+          div      faqs__toggle-icon               ← CSS-only plus/minus
+    block          bt-accordion__body              ← collapsible container (height: 0)
+      block        bt-accordion__wrap              ← grid layout matching header
+        text       bt-accordion__text              ← rich text content
+```
+
+#### Configuration attributes
+
+Set on the parent `bt-accordion` element via `_attributes`:
+
+| Attribute | Type | Default | Purpose |
+|---|---|---|---|
+| `bt-expand-first` | `"true"` / `"false"` | `"true"` | Expand first item on page load |
+| `bt-expand-all` | `"true"` / `"false"` | `"false"` | Expand all items on page load |
+| `bt-close-siblings` | `"true"` / `"false"` | `"true"` | Collapse other items when one opens |
+| `bt-header-scroll` | integer string | `"767"` | Viewport width (px) at or below which clicking scrolls to the opened item |
+| `bt-faq-schema` | `"true"` / `"false"` | `"true"` | Inject FAQ structured data into `<head>` |
+| `bt-transition-duration` | integer string | `"300"` | Expand/collapse transition duration in ms |
+
+#### Global classes
+
+All CSS lives in the `bt-accordion` root global class. Child classes have empty settings.
+
+| Global class ID | Name | Notes |
+|---|---|---|
+| `nfodwp` | `bt-accordion` | Root — holds all CSS |
+| `goecaj` | `bt-accordion__item` | Empty |
+| `iwmllr` | `bt-accordion__header` | Empty |
+| `zekpuv` | `bt-accordion__title` | Empty |
+| `hbclzh` | `bt-accordion__header-wrap` | Empty |
+| `cvyxmw` | `bt-accordion__icon-wrapper` | Empty — hidden, legacy SVG icon |
+| `ozldrq` | `bt-accordion__icon` | Empty — legacy SVG icon |
+| `fdlkkr` | `faqs__icons` | Has mobile CSS — legacy Frames class |
+| `zdprpj` | `faqs__toggle-icon` | Has CSS — plus/minus icon, legacy Frames class |
+| `jrwqym` | `bt-accordion__body` | Empty |
+| `fuczdv` | `bt-accordion__wrap` | Empty |
+| `abfnip` | `bt-accordion__text` | Empty |
+
+> **Legacy naming:** `faqs__icons`, `faqs__toggle-icon`, and `fr-accordion__icon-wrapper` are Frames framework classes carried over. They don't follow `bt-` BEM convention. On new builds, rename to `bt-accordion__icon-wrap` and `bt-accordion__toggle-icon` and migrate the CSS into the root global class.
+
+#### CSS (root global class: `bt-accordion`)
+
+```css
+/* Global class: bt-accordion */
+
+/* ── Item ── */
+%root%__item {
+  border-block-end: 1px solid var(--primary);
+}
+
+%root%__item:first-of-type {
+  border-block-start: 1px solid var(--primary);
+}
+
+%root%__item.active %root%__icon {
+  transform: rotate(180deg);
+}
+
+%root%__item.active %root%__header {
+  border-color: var(--primary);
+}
+
+%root%__item.active %root%__title {
+  color: var(--primary);
+}
+
+/* ── Header ── */
+%root%__header {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--grid-2-3);
+  align-items: center;
+  padding-block: var(--space-xs);
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  %root%__header {
+    display: flex;
+    align-items: flex-start;
+  }
+}
+
+/* ── Title ── */
+%root%__title {
+  font-size: calc(var(--text-xl) + 0.5rem); /* FLAG: confirm scale */
+  font-family: span; /* FLAG: confirm typeface */
+  font-weight: 300;
+}
+
+/* ── Header wrap ── */
+%root%__header-wrap {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ── Icon ── */
+%root%__icon {
+  font-size: 1.6rem;
+  color: var(--text-dark);
+  transition: transform .4s ease;
+}
+
+/* ── Body ── */
+%root%__body {
+  overflow: hidden;
+  height: 0px;
+  transition: height .4s ease;
+}
+
+/* ── Body wrap ── */
+%root%__wrap {
+  display: grid;
+  grid-template-columns: var(--grid-2-3);
+  justify-content: space-between;
+  padding-block-end: var(--space-xl);
+}
+
+@media (max-width: 768px) {
+  %root%__wrap {
+    display: flex;
+  }
+}
+
+/* ── Text ── */
+%root%__text {
+  grid-column-start: 2;
+  font-weight: 300;
+}
+```
+
+#### Plus/minus toggle icon CSS (legacy — `faqs__toggle-icon`)
+
+```css
+.faqs__toggle-icon {
+  height: 16px;
+  position: relative;
+  width: 16px;
+}
+
+.faqs__toggle-icon::before,
+.faqs__toggle-icon::after {
+  background-color: var(--primary);
+  content: "";
+  position: absolute;
+  transition: transform 0.25s ease-out;
+}
+
+.faqs__toggle-icon::before {
+  height: 16px;
+  left: 50%;
+  margin-left: -1px;
+  top: 0;
+  width: 1px;
+}
+
+.faqs__toggle-icon::after {
+  height: 1px;
+  left: 0;
+  margin-top: -1px;
+  top: 50%;
+  width: 16px;
+}
+
+.bt-accordion__item.active .faqs__toggle-icon::before {
+  transform: rotate3d(0, 0, 1, 90deg);
+}
+
+@media (max-width: 767px) {
+  .faqs__toggle-icon {
+    height: 24px;
+    width: 24px;
+  }
+  .faqs__toggle-icon::before {
+    height: 24px;
+  }
+  .faqs__toggle-icon::after {
+    width: 24px;
+  }
+}
+```
+
+#### JavaScript — `code` element
+
+The accordion JS lives in a Bricks `code` element at root level (`parent: 0`). It initialises all `.bt-accordion` instances on the page, reads config from data attributes, and handles expand/collapse, keyboard interaction, scroll-to-item, and FAQ schema injection.
+
+Full script: see `bt-accordion` code element in the live project. Key behaviours:
+
+- **Expand/collapse**: sets `height: scrollHeight` on body, toggles `.active` on item
+- **Keyboard**: Enter and Space trigger toggle on headers
+- **Scroll**: at viewport widths ≤ `bt-header-scroll`, scrolls to opened item after transition
+- **FAQ schema**: generates `FAQPage` structured data from question/answer content and injects into `<head>`
+- **Builder compatibility**: includes `<style>` block setting `[data-v-app] .bt-accordion__body { height: auto; }` so content is visible in the Bricks editor
+
+#### Bricks JSON — parent element
+
+```json
+{
+  "id": "xxxxxx",
+  "name": "block",
+  "parent": "xxxxxx",
+  "children": ["xxxxxx", "xxxxxx", "xxxxxx"],
+  "settings": {
+    "tag": "ul",
+    "_cssGlobalClasses": ["nfodwp", "acss_import_list--none"],
+    "_attributes": [
+      {"id": "xxxxxx", "name": "bt-expand-first", "value": "true"},
+      {"id": "xxxxxx", "name": "bt-expand-all", "value": "false"},
+      {"id": "xxxxxx", "name": "bt-close-siblings", "value": "true"},
+      {"id": "xxxxxx", "name": "bt-header-scroll", "value": "767"},
+      {"id": "xxxxxx", "name": "bt-faq-schema", "value": "true"}
+    ]
+  },
+  "label": "Accordion"
+}
+```
+
+#### Bricks JSON — item element
+
+```json
+{
+  "id": "xxxxxx",
+  "name": "block",
+  "parent": "xxxxxx",
+  "children": ["xxxxxx", "xxxxxx"],
+  "settings": {
+    "tag": "li",
+    "_cssGlobalClasses": ["goecaj"]
+  },
+  "label": "Item"
+}
+```
+
+#### Bricks JSON — header element
+
+```json
+{
+  "id": "xxxxxx",
+  "name": "block",
+  "parent": "xxxxxx",
+  "children": ["xxxxxx", "xxxxxx"],
+  "settings": {
+    "_cssGlobalClasses": ["iwmllr"],
+    "_attributes": [
+      {"id": "xxxxxx", "name": "tabindex", "value": "0"},
+      {"id": "xxxxxx", "name": "role", "value": "button"},
+      {"id": "xxxxxx", "name": "aria-expanded", "value": "false"}
+    ]
+  },
+  "label": "Header"
+}
+```
+
+#### Bricks JSON — body element
+
+```json
+{
+  "id": "xxxxxx",
+  "name": "block",
+  "parent": "xxxxxx",
+  "children": ["xxxxxx"],
+  "settings": {
+    "_cssGlobalClasses": ["jrwqym"],
+    "_attributes": [
+      {"id": "xxxxxx", "name": "role", "value": "region"}
+    ]
+  },
+  "label": "Body"
+}
+```
+
+---
+
+## 18. ELEMENTS PENDING DOCUMENTATION
 
 The following elements require JSON export to document:
 
-- `accordion-nested` — nestable accordion
 - `slider-nested` — nestable slider (see SLIDERS.md for integration patterns)
 - `toggle` — collapsible panel
 - `toggle-mode` — content toggle (e.g. monthly/annual)
@@ -581,5 +880,6 @@ Export a configured sample from Bricks and paste the JSON here to document.
 
 ---
 
-*BRICKS-ELEMENTS.md v1.0 — March 2026*
-*Initial version: component identification rules + 15 native element schemas from production JSON.*
+*BRICKS-ELEMENTS.md v1.1 — March 2026*
+*v1.0: Component identification rules + 15 native element schemas from production JSON.*
+*v1.1: Added custom components section. bt-accordion documented with full structure, CSS, JS reference, and config attributes.*
