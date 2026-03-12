@@ -696,6 +696,25 @@ ALL component CSS lives in **one global class object** — the root block class.
 
 Child elements (bt-hero__wrap, bt-hero__content etc.) have **empty CSS settings** in the JSON. Their Bricks global class objects exist only to apply the class name — no CSS.
 
+### CSS output format — `%root%` with class reference
+
+All CSS output uses `%root%` selectors. The parent class name is stated once in the header comment as a reference — never hardcoded in selectors.
+```css
+/* Global class: bt-hero */
+
+%root% {
+  min-height: 60vh;
+}
+%root%__wrap {
+  gap: var(--space-xl);
+}
+%root%__heading {
+  text-transform: uppercase;
+}
+```
+
+This is paste-ready for the Bricks Global Classes panel. `%root%` resolves to the class name automatically. Never hardcode the class name in selectors — the comment header is the only place it appears
+
 ### Property order (consistent top to bottom)
 
 ```css
