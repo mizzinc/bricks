@@ -1325,6 +1325,7 @@ font-weight: 500;
 | `OUTPUT-MODES.md` v1.0 | Bricks-ready vs Standalone preview modes |
 | `BRX-ANIMATE.md` v1.1 | Bricks native interaction animation system — Tier 1 and Tier 2 patterns |
 | `LEARNINGS.md` | Session corrections — promoted entries noted inline |
+| `BRICKS-ELEMENTS.md` v1.0 | Native element schemas and component identification rules |
 
 ---
 
