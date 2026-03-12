@@ -336,38 +336,7 @@ This is more useful than "1D vs 2D." Both systems can produce two-dimensional la
 
 ### WHAT BRICKS OWNS (separate from ACSS)
 
-Bricks applies layout defaults via `@layer bricks` — lower specificity than your BEM CSS, but still redundant to redeclare:
-
-| Element | Bricks default |
-|---|---|
-| `brxe-block` | `display: flex; flex-direction: column; align-items: flex-start; width: 100%` |
-| `brxe-container` | `display: flex; flex-direction: column; align-items: flex-start; margin-inline: auto` |
-| `brxe-div` | No layout defaults |
-| `brxe-section` | No layout defaults |
-
-**Never write `display: flex` or `flex-direction: column` on BEM classes applied to `block` or `container` elements.** Bricks already does it. Only write overrides — what you want to *change* from the default:
-
-```css
-/* WRONG — Bricks already applies display:flex and flex-direction:column */
-%root%__content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-l);
-}
-
-/* CORRECT — only override what differs from Bricks default */
-%root%__content {
-  gap: var(--space-l);
-}
-
-/* CORRECT — changing direction is an override, write it */
-%root%__cta {
-  flex-direction: row;
-  gap: var(--space-s);
-}
-```
-
-**Use `brxe-div` when you need `display: grid`** — no Bricks layout defaults to fight against.
+See RULES.md Section 2 for Bricks element defaults. This section covers ACSS layout systems only.
 
 ---
 
@@ -664,7 +633,4 @@ This is the "variables are king" philosophy. The result is maximum maintainabili
 
 ---
 
-*Version 1.2 — Updated March 2026*
-*Section 10 rewritten: complete flex vs grid decision guide added, all ACSS layout systems documented from live docs.*
-*v1.2: Section 10 core rule updated — Bricks `@layer bricks` defaults for `brxe-block` and `brxe-container` documented. Never write `display:flex` or `flex-direction:column` on block/container BEM classes. Flexbox example updated. Section 12 do-not-write list updated accordingly.*
-*Sources: https://docs.automaticcss.com/3.0/flexbox | https://academy.bricksbuilder.io/article/block-element/ | https://www.youtube.com/watch/3elGSZSWTbM*
+*Version 1.3 — Updated March 2026*
