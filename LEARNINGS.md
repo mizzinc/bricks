@@ -35,44 +35,31 @@
 ## COLOUR & BACKGROUNDS
 
 ### `selection--alt` pairs with dark backgrounds
-- Always add `selection--alt` alongside `bg--dark` and `bg--ultra-dark`
-- ACSS swaps selection colours via `--selection-bg-color-alt` and `--selection-text-color-alt`
-- Without it, text selection is invisible or low-contrast on dark sections
+Promoted to RULES.md Section 5 — March 2026.
 
 ---
 
 ## SEMANTIC HTML
 
 ### Card grids use `<ul>` + `<li>`, not `<div>` + `<div>`
-- Any repeating set of cards/items is semantically a list
-- Grid container → `<ul>` (Bricks `div` element, tag override to `ul`) with `list--none` utility class
-- Each card → `<li>` (Bricks `div` element, tag override to `li`)
-- This applies universally to portfolio grids, service cards, team grids, blog loops, etc.
+Promoted to RULES.md Section 10 — March 2026.
 
 ### Simple arrows/indicators use text characters, not inline SVG
-- A directional arrow like `↗` should be a `text-basic` element (`<span>`) with the Unicode character
-- Reserve inline SVG for complex icons that have no Unicode equivalent
-- Simpler, lighter, no SVG sourcing step required
+Promoted to RULES.md Section 10 — March 2026.
 
 ---
 
 ## BRICKS STRUCTURE
 
 ### Content must be wrapped in containers
-- Section children are `brxe-container` elements, not raw content blocks
-- Related content groups (intro + grid + footer) share a container with explicit spacing
-- Standalone elements (section kicker) get their own container if they need independent width/spacing behaviour
-- The container provides `max-inline-size: var(--content-width)` and `margin-inline: auto`
+Promoted to RULES.md Section 10 — March 2026.
 
 ### Container `row-gap` must be declared explicitly
-- Don't assume ACSS contextual spacing will handle vertical gaps between content groups inside a container
-- Set `row-gap: var(--container-gap)` on the `__wrap` container explicitly
-- This spaces the intro, grid, and footer correctly
+Promoted to RULES.md Section 6 — March 2026.
 
 ---
 
 ## BRICKS ELEMENT DEFAULTS
-
 Promoted to RULES.md Section 2 — March 2026.
 
 ---
@@ -95,13 +82,7 @@ Promoted to RULES.md Section 2 — March 2026.
 - For a footer CTA right-aligned at the bottom of a flex column, `align-items: flex-end` is correct
 
 ### Bricks link elements need specificity handling
-- Bricks adds `.brxe-text-link--btn` to text-link elements styled as buttons/CTAs
-- Override Bricks link defaults by reassigning `--link-color` token AND including the Bricks modifier class in the selector for specificity:
-  ```css
-  %root%__cta-link.brxe-text-link--btn {
-    --link-color: var(--text-dark-muted);
-  }
-  ```
+Promoted to RULES.md Section 2 — March 2026.
 
 ### Prefer single ACSS tokens over fluid expressions
 - Use `var(--h3)` not `clamp(var(--h2), 5vw, 6rem)` unless the design genuinely requires fluid scaling beyond the ACSS scale
@@ -112,24 +93,7 @@ Promoted to RULES.md Section 2 — March 2026.
 ## CARDS — CLICKABLE PARENT
 
 ### Use ACSS `clickable-parent` for full-card click areas
-- ACSS provides `clickable-parent` — a utility class that stretches a link's click area over its parent container
-- Apply `clickable-parent` to the `<a>` element inside the card, NOT to the card itself
-- This makes the entire card clickable without wrapping everything in an `<a>` tag
-- The link remains the semantic interactive element — better for accessibility and SEO
-- Docs: https://docs.automaticcss.com/3.0/mixins/clickable-parent
-
-```html
-<!-- Correct: clickable-parent on the link inside the card -->
-<li class="brxe-div bt-portfolio-card">
-  <h3 class="brxe-heading bt-portfolio-card__heading">[Client name]</h3>
-  <p class="brxe-text-basic bt-portfolio-card__tags">[Tags]</p>
-  <a class="brxe-text-link bt-portfolio-card__url clickable-parent" href="#">clienturl.co.nz</a>
-  <span class="brxe-text-basic bt-portfolio-card__arrow">↗</span>
-</li>
-```
-
-- Always use `clickable-parent` on cards that link to a destination — don't write custom `::after` overlays or wrap entire cards in `<a>` tags
-- The card needs `position: relative` for the overlay to work (ACSS card framework sets this automatically)
+Promoted to RULES.md Section 5 — March 2026.
 
 ---
 
@@ -150,9 +114,19 @@ Promoted to RULES.md Section 2 — March 2026.
 ## BRICKS JSON
 
 ### Element IDs must be 6-character lowercase alphanumeric
-- Bricks expects exactly 6 characters, lowercase letters and numbers only
-- Mixed formats like `pf0008a` (7 chars) will cause child elements to silently fail on import
-- Use a consistent pattern: `pfab01`, `pfab02`, `pfac01`, etc.
+Promoted to RULES.md Section 3 — March 2026.
+
+### `%root%` does NOT work in `_cssCustom`
+Promoted to RULES.md Section 3 — March 2026.
+
+### Element labels — keep them plain
+Promoted to RULES.md Section 3 — March 2026.
+
+### `adminNotes` — use for FLAGS, not labels
+Promoted to RULES.md Section 3 — March 2026.
+
+### Button — use `text-link` with ACSS classes, not `button` element
+Promoted to RULES.md Section 2 — March 2026.
 
 ---
 
@@ -190,68 +164,7 @@ Applied to the content block alongside the BEM class:
 - Do NOT set Duration or Delay in the panel for stagger children
 
 ### Interaction IDs
-- All `_interactions` entry IDs and element IDs: 6-char lowercase alphanumeric, randomised
-- Never use obvious placeholders like `aaaaaa` or `xxxxxx` in final JSON output
-
----
-
-## BRICKS JSON
-
-### `%root%` does NOT work in `_cssCustom`
-`%root%` is a Bricks Global Classes panel UI shorthand — it does not survive JSON import. Always use the hardcoded class name in `_cssCustom`:
-
-```json
-"_cssCustom": ".bt-hero {\n  min-height: 60vh;\n}\n.bt-hero__wrap {\n  flex-direction: row;\n}"
-```
-
-Never use `%root%` in authored JSON. Only use it when editing CSS directly inside the Bricks Global Classes panel.
-
-### Element labels — keep them plain
-Labels are for the Bricks structure panel only. Keep them short and clean:
-
-```
-"label": "Hero"
-"label": "Wrap"
-"label": "Content"
-"label": "Heading"
-"label": "Lead"
-"label": "Media"
-```
-
-Never write FLAGs or instructions in labels.
-
-### `adminNotes` — use for FLAGS, not labels
-Every Bricks element supports an `adminNotes` field in `settings`. This is the correct place for FLAGS, review notes, and developer instructions. Visible in the Bricks panel as a note on the element.
-
-```json
-"settings": {
-  "_cssGlobalClasses": ["bt1hero"],
-  "adminNotes": "FLAG: confirm display heading scale with client. Consider adding --display token to ACSS."
-}
-```
-
-Use `adminNotes` for:
-- Design decisions that need client or developer review
-- Reminders to add missing content (SVG, copy placeholders)
-- Any note that would otherwise clutter a label or appear as a CSS comment
-- Never write these in `label` — labels are structure-panel identifiers only
-
-### Button — use `text-link` with ACSS classes, not `button` element
-Bricks wires ACSS button styles via `text-link` + global classes, not the native `button` element:
-
-```json
-{
-  "name": "text-link",
-  "settings": {
-    "text": "Get started in 2 minutes",
-    "link": {"type": "external", "url": "#", "rel": "nofollow", "ariaLabel": "...", "title": "..."},
-    "_cssGlobalClasses": ["acss_import_btn--primary", "acss_import_btn--outline", "vcvrjs"],
-    "_interactions": [{"id": "ngnbpi", "trigger": "enterView", "action": "startAnimation", "animationType": "fadeInUp"}]
-  }
-}
-```
-
-ACSS button global class IDs follow the pattern `acss_import_btn--[style]`.
+Promoted to RULES.md Section 3 (merged into rule 7) — March 2026.
 
 ---
 
