@@ -73,6 +73,21 @@ Every element carries its Bricks element class **first**, followed by BEM class(
 - `div` = No layout defaults from Bricks. Use when you need `display: grid`, a non-flex wrapper, or any layout the block element's flex default would fight against
 - `section` = No layout defaults. Root `section` always has `"parent": 0` (integer zero, not a string)
 
+### Element selection guide
+
+| Need | Use |
+|---|---|
+| Content group, column of text/buttons, flex column | `brxe-block` |
+| Max-width section wrapper | `brxe-container` |
+| CSS grid container | `brxe-div` |
+| Flex row (non-column), icon group, tag list | `brxe-div` (declare `display: flex; flex-direction: row`) |
+| Generic non-layout wrapper | `brxe-div` |
+
+**Write only overrides:**
+- `block` / `container`: gap, flex-direction: row, align-items: center, flex-wrap — never display or flex-direction: column
+- `div`: must declare display, direction, alignment — nothing is inherited from Bricks
+- Use `div` when you need `display: grid` — avoids fighting the block/container flex default
+
 ### Text & Typography
 
 | Element | Rendered as | Bricks class | JSON `settings` |
