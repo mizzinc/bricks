@@ -73,65 +73,7 @@
 
 ## BRICKS ELEMENT DEFAULTS
 
-### `brxe-block` and `brxe-container` own `display: flex; flex-direction: column`
-Bricks applies layout defaults via `@layer bricks` — confirmed from production DevTools:
-
-```css
-@layer bricks {
-  .brxe-block {
-    align-items: flex-start;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-  }
-}
-
-@layer bricks {
-  .brxe-container {
-    align-items: flex-start;
-    display: flex;
-    flex-direction: column;
-    margin-left: auto;
-    margin-right: auto;
-    width: 1100px;
-  }
-}
-```
-
-**Never write `display: flex` or `flex-direction: column` on BEM classes applied to `block` or `container` elements.** Only write what you're overriding from the Bricks default:
-
-```css
-/* WRONG — Bricks already applies these */
-%root%__content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-l);
-}
-
-/* CORRECT — gap is not a Bricks default, write it; display/direction are, omit them */
-%root%__content {
-  gap: var(--space-l);
-}
-
-/* CORRECT — changing direction IS an override, write it */
-%root%__cta {
-  flex-direction: row;
-  gap: var(--space-s);
-}
-```
-
-### `brxe-div` has no layout defaults
-- Use `brxe-div` whenever you need `display: grid` or any layout that would fight against the block/container flex default
-- Must declare `display: grid` (or `display: flex` for a non-column flex context) explicitly in BEM CSS
-
-### Element selection guide
-| Need | Use |
-|---|---|
-| Content group, column of text/buttons, flex column | `brxe-block` |
-| Max-width section wrapper | `brxe-container` |
-| CSS grid container | `brxe-div` |
-| Flex row (non-column), icon group, tag list | `brxe-div` (declare `display: flex; flex-direction: row`) |
-| Generic non-layout wrapper | `brxe-div` |
+Promoted to RULES.md Section 2 — March 2026.
 
 ---
 
