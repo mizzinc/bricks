@@ -1,7 +1,7 @@
 # RULES.md
 # Claude Project: Bricks Builder — Code Generation Rules
 # Author: Michael van Dinther / Mizzinc
-# Version: 2.2
+# Version: 2.3
 # Last updated: March 2026
 
 ---
@@ -150,6 +150,35 @@ brxe-div  bt-feature__stat
 
 - `style` maps to the `btn--[colour]` token — value confirmed from `:root` paste at session start
 - `size` options: `"btn--xs"`, `"btn--s"`, `"btn--m"`, `"btn--l"`
+
+<!-- PROMOTED from LEARNINGS.md — March 2026 -->
+### Buttons — use `text-link` with ACSS classes, not `button` element
+
+Bricks wires ACSS button styles via `text-link` + global classes, not the native `button` element. The `button` element table entry above exists for reference — it appears in legacy schemas — but new output always uses `text-link`:
+
+```json
+{
+  "name": "text-link",
+  "settings": {
+    "text": "Get started",
+    "link": {"type": "external", "url": "#", "rel": "nofollow", "ariaLabel": "...", "title": "..."},
+    "_cssGlobalClasses": ["acss_import_btn--primary", "acss_import_btn--outline"]
+  }
+}
+```
+
+ACSS button global class IDs follow the pattern `acss_import_btn--[style]`.
+
+### Bricks link elements need specificity handling
+
+Bricks adds `.brxe-text-link--btn` to text-link elements styled as buttons/CTAs. Override Bricks link defaults by reassigning `--link-color` token AND including the Bricks modifier class in the selector for specificity:
+
+```css
+%root%__cta-link.brxe-text-link--btn {
+  --link-color: var(--text-dark-muted);
+}
+```
+<!-- END PROMOTED -->
 
 ### Media
 
@@ -342,6 +371,50 @@ Only heading elements that are referenced by `aria-labelledby` get a `_cssId`. N
 **6. `aria-labelledby` is set on the section via `_attributes`.**
 The section element's `_attributes` array contains `{"name": "aria-labelledby", "value": "bt-[name]-heading"}`. The referenced heading has `_cssId: "bt-[name]-heading"`.
 
+<!-- PROMOTED from LEARNINGS.md — March 2026 -->
+**7. Element IDs must be exactly 6-character lowercase alphanumeric.**
+Bricks expects exactly 6 characters, lowercase letters and numbers only. Mixed formats like `pf0008a` (7 chars) will cause child elements to silently fail on import. Use a consistent pattern: `pfab01`, `pfab02`, `pfac01`, etc. Interaction IDs follow the same rule — 6-char lowercase alphanumeric, randomised. Never use obvious placeholders like `aaaaaa` or `xxxxxx` in final JSON output.
+
+**8. `%root%` does NOT work in `_cssCustom`.**
+`%root%` is a Bricks Global Classes panel UI shorthand — it does not survive JSON import. Always use the hardcoded class name in `_cssCustom`:
+
+```json
+"_cssCustom": ".bt-hero {\n  min-height: 60vh;\n}\n.bt-hero__wrap {\n  flex-direction: row;\n}"
+```
+
+Never use `%root%` in authored JSON. Only use it when editing CSS directly inside the Bricks Global Classes panel.
+
+**9. Element labels — keep them plain.**
+Labels are for the Bricks structure panel only. Keep them short and clean:
+
+```
+"label": "Hero"
+"label": "Wrap"
+"label": "Content"
+"label": "Heading"
+"label": "Lead"
+"label": "Media"
+```
+
+Never write FLAGs or instructions in labels.
+
+**10. `adminNotes` — use for FLAGs, not labels.**
+Every Bricks element supports an `adminNotes` field in `settings`. This is the correct place for FLAGs, review notes, and developer instructions. Visible in the Bricks panel as a note on the element.
+
+```json
+"settings": {
+  "_cssGlobalClasses": ["bt1hero"],
+  "adminNotes": "FLAG: confirm display heading scale with client. Consider adding --display token to ACSS."
+}
+```
+
+Use `adminNotes` for:
+- Design decisions that need client or developer review
+- Reminders to add missing content (SVG, copy placeholders)
+- Any note that would otherwise clutter a label or appear as a CSS comment
+- Never write these in `label` — labels are structure-panel identifiers only
+<!-- END PROMOTED -->
+
 ### JSON example (bt-hero)
 See production hero schema in session history for the complete reference.
 
@@ -410,6 +483,26 @@ bt-[block]__[element]--[modifier]
 | `__url` | Plain URL display link |
 | `__email` | Email address link |
 
+<!-- PROMOTED from LEARNINGS.md — March 2026 -->
+### Cards — clickable parent pattern
+
+Use ACSS `clickable-parent` for full-card click areas. Apply `clickable-parent` to the `<a>` element inside the card, NOT to the card itself. This makes the entire card clickable without wrapping everything in an `<a>` tag. The link remains the semantic interactive element — better for accessibility and SEO.
+
+```html
+<!-- Correct: clickable-parent on the link inside the card -->
+<li class="brxe-div bt-portfolio-card">
+  <h3 class="brxe-heading bt-portfolio-card__heading">[Client name]</h3>
+  <p class="brxe-text-basic bt-portfolio-card__tags">[Tags]</p>
+  <a class="brxe-text-link bt-portfolio-card__url clickable-parent" href="#">clienturl.co.nz</a>
+  <span class="brxe-text-basic bt-portfolio-card__arrow" aria-hidden="true">↗</span>
+</li>
+```
+
+- Always use `clickable-parent` on cards that link to a destination — don't write custom `::after` overlays or wrap entire cards in `<a>` tags
+- The card needs `position: relative` for the overlay to work (ACSS card framework sets this automatically)
+- Docs: https://docs.automaticcss.com/3.0/mixins/clickable-parent
+<!-- END PROMOTED -->
+
 ### Modifier strategy for site-wide components
 
 When a component (like `bt-hero`) is used across multiple pages with variations, the approach depends entirely on **what is varying**. There are two tools available — use the right one for the job.
@@ -432,6 +525,15 @@ Use when the variation is a colour scheme change (dark, light, ultra-dark etc.).
 ```
 
 `bt-hero--dark` should not exist. `bg--dark` already does the job completely.
+
+<!-- PROMOTED from LEARNINGS.md — March 2026 -->
+**Always pair dark backgrounds with `selection--alt`.**
+Add `selection--alt` alongside `bg--dark` and `bg--ultra-dark` on the same element. ACSS swaps selection highlight colours via `--selection-bg-color-alt` and `--selection-text-color-alt`. Without it, text selection is invisible or low-contrast on dark sections.
+
+```html
+<section class="brxe-section bt-hero bg--dark selection--alt">
+```
+<!-- END PROMOTED -->
 
 **Fine-tuning via localised variable override:**
 If you need to adjust a specific colour within a `bg--dark` context, override the token ACSS is already reading — don't write property rules:
@@ -486,7 +588,7 @@ A modifier contains **only the delta** — what changes from the base. If the mo
 
 | Variation type | Tool | How |
 |---|---|---|
-| Dark / light background + all colour relationships | Tool 1 | `bg--dark` on the section element |
+| Dark / light background + all colour relationships | Tool 1 | `bg--dark selection--alt` on the section element |
 | Fine-tune a colour within a bg context | Tool 1 + variable override | `--bg-dark-heading: var(--white)` in BEM base CSS |
 | Standard equal-column grid | Tool 2 | `grid--2 grid--l-1` on `__wrap` |
 | Standard fractional grid | Tool 2 | `grid--1-2 grid--l-1` on `__wrap` |
@@ -714,6 +816,7 @@ Child elements (bt-hero__wrap, bt-hero__content etc.) have **empty CSS settings*
 ### CSS output format — `%root%` with class reference
 
 All CSS output uses `%root%` selectors. The parent class name is stated once in the header comment as a reference — never hardcoded in selectors.
+
 ```css
 /* Global class: bt-hero */
 
@@ -728,7 +831,21 @@ All CSS output uses `%root%` selectors. The parent class name is stated once in 
 }
 ```
 
-This is paste-ready for the Bricks Global Classes panel. `%root%` resolves to the class name automatically. Never hardcode the class name in selectors — the comment header is the only place it appears
+This is paste-ready for the Bricks Global Classes panel. `%root%` resolves to the class name automatically. Never hardcode the class name in selectors — the comment header is the only place it appears.
+
+<!-- PROMOTED from LEARNINGS.md — March 2026 -->
+### Container gap must be declared explicitly
+
+Auto Contextual Spacing is OFF (see ACSS-AUTO.md Section 0). Never assume ACSS will handle vertical gaps between content groups inside a container. Always set gap explicitly:
+
+```css
+%root%__wrap {
+  row-gap: var(--container-gap);
+}
+```
+
+This spaces intro blocks, grids, and footer CTAs correctly within a container. Omitting it produces collapsed spacing.
+<!-- END PROMOTED -->
 
 ### Property order (consistent top to bottom)
 
@@ -902,6 +1019,26 @@ section--xl section--m-m         ← xl padding default, m padding at ≤768px
 - `<blockquote>` for pull quotes / testimonials
 - `<cite>` for attribution on quotes
 - Avoid unnecessary wrappers — if an element has one child, question the wrapper
+
+<!-- PROMOTED from LEARNINGS.md — March 2026 -->
+### Card grids use `<ul>` + `<li>`, not `<div>` + `<div>`
+
+Any repeating set of cards/items is semantically a list:
+- Grid container → `<ul>` (Bricks `div` element, tag override to `ul`) with `list--none` utility class
+- Each card → `<li>` (Bricks `div` element, tag override to `li`)
+- This applies universally to portfolio grids, service cards, team grids, blog loops, etc.
+
+### Simple arrows/indicators use text characters, not inline SVG
+
+A directional arrow like `↗` should be a `text-basic` element (`<span>`) with the Unicode character. Reserve inline SVG for complex icons that have no Unicode equivalent. Simpler, lighter, no SVG sourcing step required.
+
+### Content must be wrapped in containers
+
+Section children are `brxe-container` elements, not raw content blocks:
+- Related content groups (intro + grid + footer) share a container with explicit spacing
+- Standalone elements (section kicker) get their own container if they need independent width/spacing behaviour
+- The container provides `max-inline-size: var(--content-width)` and `margin-inline: auto`
+<!-- END PROMOTED -->
 
 ---
 
@@ -1108,6 +1245,11 @@ font-weight: 500;
 - Do not apply `position: sticky` inside a container with `overflow: hidden` — sticky will silently break. Always `overflow: unset` the container first.
 - Do not add `brx-animate` to `_cssGlobalClasses` — Bricks applies it automatically when `_interactions` is present. Never author it manually.
 - Do not write `display: flex` or `flex-direction: column` in BEM CSS for `block` or `container` elements — Bricks applies both automatically via `@layer bricks`. Only write flex overrides: `flex-direction: row`, `align-items: center`, `gap`, etc.
+- Do not omit gap on containers — Auto Contextual Spacing is OFF. Always declare gap explicitly.
+- Do not use `%root%` in `_cssCustom` JSON fields — hardcode the class name there. `%root%` is panel-only.
+- Do not wrap entire cards in `<a>` tags — use ACSS `clickable-parent` on the link element inside the card.
+- Do not use `<div>` for repeating card/item grids — use `<ul>` + `<li>` with `list--none`.
+- Do not forget `selection--alt` on `bg--dark` and `bg--ultra-dark` sections.
 
 ---
 
@@ -1116,14 +1258,13 @@ font-weight: 500;
 | File | Purpose |
 |---|---|
 | `ACSS-TOKENS.md` v4.0 | Project-agnostic token catalogue — values from `:root` paste |
-| `ACSS-AUTO.md` v1.0 | What ACSS handles automatically — do not duplicate |
+| `ACSS-AUTO.md` v1.2 | What ACSS handles automatically — do not duplicate |
 | `ACSS-CHEATSHEET.md` v1.0 | All utility classes + breakpoint modifier syntax |
 | `OUTPUT-MODES.md` v1.0 | Bricks-ready vs Standalone preview modes |
 | `BRX-ANIMATE.md` v1.1 | Bricks native interaction animation system — Tier 1 and Tier 2 patterns |
+| `LEARNINGS.md` | Session corrections — promoted entries noted inline |
 
 ---
 
-*End of RULES.md — version 2.2*
-*Update: Removed bt-fade-in throughout. Animation now via _interactions + brx-animate (auto-applied by Bricks). See BRX-ANIMATE.md.*
-*Added BRX-ANIMATE.md to reference files table.*
-*v2.2: Section 2 layout table updated with confirmed Bricks default CSS for block and container (display: flex; flex-direction: column — both elements). Section 14 updated accordingly.*
+*End of RULES.md — version 2.3*
+*v2.3: Promoted stable LEARNINGS.md entries into Sections 2, 3, 5, 6, 10, 14. Added CSS output format convention (Section 6). Added selection--alt to dark bg pattern (Section 5). Added container gap rule (Section 6). Updated "What not to do" list (Section 14).*
